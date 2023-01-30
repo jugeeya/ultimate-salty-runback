@@ -1,6 +1,6 @@
 #![feature(proc_macro_hygiene)]
 
-use skyline::{hook, install_hook};
+use skyline::install_hook;
 use smash::phx::*;
 use smash::hash40;
 use smash::app::{self, lua_bind::*};
@@ -58,14 +58,15 @@ pub unsafe fn handle_get_command_flag_cat(
     let mut flag = original!()(module_accessor, category);
 
     if category != FIGHTER_PAD_COMMAND_CATEGORY1 {
-        return;
+        return flag;
     }
 
-    if ControlModule::button_on(CONTROL_PAD_BUTTON_STOCK_SHARE) {
-        if fighter.is_button_on(CONTROL_PAD_BUTTON_ATTACK_RAW) && !fighter.is_button_on(!(CONTROL_PAD_BUTTON_ATTACK_RAW | CONTROL_PAD_BUTTON_STOCK_SHARE)) {
-            app::FighterUtil::flash_eye_info(fighter.module_accessor);
-            EffectModule::req_follow(fighter.module_accessor, Hash40::new("sys_assist_out"), Hash40::new("top"), &Vector3f{x: 0, y: 0, z: 0}, &Vector3f{x: 0, y: 0, z: 0}, 1.0, true, 0, 0, 0, 0, 0, false, false);
-            utils::util::trigger_match_reset();
+    if ControlModule::check_button_on(module_accessor, CONTROL_PAD_BUTTON_STOCK_SHARE) {
+        // TODO: "And no other buttons are on"?
+        if ControlModule::check_button_on(module_accessor, CONTROL_PAD_BUTTON_ATTACK_RAW) {
+            app::FighterUtil::flash_eye_info(module_accessor);
+            EffectModule::req_follow(module_accessor, Hash40::new("sys_assist_out"), Hash40::new("top"), &Vector3f{x: 0.0, y: 0.0, z: 0.0}, &Vector3f{x: 0.0, y: 0.0, z: 0.0}, 1.0, true, 0, 0, 0, 0, 0, false, false);
+            trigger_match_reset();
         }
     }
 
