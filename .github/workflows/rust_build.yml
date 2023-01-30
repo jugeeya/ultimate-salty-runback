@@ -1,0 +1,50 @@
+name: Rust
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  clippy_pr:
+    runs-on: ubuntu-latest
+    container: jugeeya/cargo-skyline:3.2.0
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup PATH
+        run: export PATH=$PATH:/root/.cargo/bin:/opt/devkitpro/devkitA64/bin
+      - name: Install minimal nightly rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          components: rustfmt, clippy
+          default: true
+          target: x86_64-unknown-linux-gnu
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          toolchain: nightly
+          args: --all-features --target=x86_64-unknown-linux-gnu
+      - uses: mbrobbel/rustfmt-check@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+  plugin:
+    runs-on: ubuntu-latest
+    container:
+      image: jugeeya/cargo-skyline:3.2.0
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build release NRO
+        id: build_release
+        run: |
+          PATH=$PATH:/root/.cargo/bin:/opt/devkitpro/devkitA64/bin /root/.cargo/bin/cargo-skyline skyline build --release
+        env:
+          HOME: /root
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: plugin
+          path: target/aarch64-skyline-switch/release/libsalty_runback.nro
