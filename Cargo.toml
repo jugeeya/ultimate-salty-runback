@@ -14,6 +14,9 @@ crate-type = ["cdylib"]
 skyline = { git = "https://github.com/ultimate-research/skyline-rs.git" }
 skyline_smash = { git = "https://github.com/ultimate-research/skyline-smash.git", branch = "no-cache" }
 
+[patch.crates-io]
+nnsdk = { git = "https://github.com/ultimate-research/nnsdk-rs" }
+
 [profile.dev]
 panic = "abort"
 
