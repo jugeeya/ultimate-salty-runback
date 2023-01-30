@@ -1,9 +1,13 @@
 #![feature(proc_macro_hygiene)]
 
-use skyline::install_hook;
+#[macro_use]
+extern crate modular_bitfield;
+
+use skyline::install_hooks;
 use smash::phx::*;
 use smash::app::{self, lua_bind::*};
 use smash::lib::lua_const::*;
+use input::{ControllerMapping, MappedInputs, SomeControllerStruct, Buttons}
 
 /// Taken from HDR: https://github.com/HDR-Development/HewDraw-Remix/blob/76140b549c829ceaf8d6b7fa5ce4b42bd99bf57d/dynamic/src/util.rs#L230-L242
 pub const fn p_p_game_state() -> usize {
@@ -60,21 +64,50 @@ pub unsafe fn handle_get_command_flag_cat(
         return flag;
     }
 
-    if ControlModule::check_button_on(module_accessor, *CONTROL_PAD_BUTTON_STOCK_SHARE) {
-        // TODO: "And no other buttons are on"?
-        if ControlModule::check_button_on(module_accessor, *CONTROL_PAD_BUTTON_ATTACK_RAW) {
+    if is_button_on(module_accessor, Buttons::StockShare) {
+        if is_button_on(module_accessor, Buttons::AttackRaw) && !is_button_on(module_accessor, !(Buttons::AttackRaw | Buttons::StockShare)) {
             app::FighterUtil::flash_eye_info(module_accessor);
             EffectModule::req_follow(module_accessor, Hash40::new("sys_assist_out"), Hash40::new("top"), &Vector3f{x: 0.0, y: 0.0, z: 0.0}, &Vector3f{x: 0.0, y: 0.0, z: 0.0}, 1.0, true, 0, 0, 0, 0, 0, false, false);
             trigger_match_reset();
-        }
+        } 
     }
 
     flag
 }
 
+
+#[skyline::hook(offset = 0x17504a0)]
+unsafe fn map_controls_hook(
+    mappings: *mut ControllerMapping,
+    player_idx: i32,
+    out: *mut MappedInputs,
+    controller_struct: &SomeControllerStruct,
+    arg: bool
+) {
+    let controller = controller_struct.controller;
+    let ret = original!()(mappings, player_idx, out, controller_struct, arg);
+
+    // Check if the button combos are being pressed and then force Stock Share + AttackRaw/SpecialRaw depending on input
+
+    if controller.current_buttons.l()
+    && controller.current_buttons.r()
+    && controller.current_buttons.a()
+    && (controller.current_buttons.minus() || controller.current_buttons.plus())
+    {
+        if controller.current_buttons.x() {
+            (*out).buttons = Buttons::StockShare | Buttons::AttackRaw;
+        } else if controller.current_buttons.y() {
+            (*out).buttons = Buttons::StockShare | Buttons::SpecialRaw;
+        }
+    }
+}
+
 #[skyline::main(name = "salty_runback")]
 pub fn main() {
     println!("[Salty Runback] Initializing...");
-    install_hook!(handle_get_command_flag_cat);
+    install_hooks!(
+        handle_get_command_flag_cat,
+        map_controls_hook
+    );
     println!("[Salty Runback] Installed!");
 }
