@@ -4,6 +4,7 @@ use skyline::{hook, install_hook};
 use smash::phx::*;
 use smash::hash40;
 use smash::app::{self, lua_bind::*};
+use smash::lib::lua_const::*;
 
 /// Taken from HDR: https://github.com/HDR-Development/HewDraw-Remix/blob/76140b549c829ceaf8d6b7fa5ce4b42bd99bf57d/dynamic/src/util.rs#L230-L242
 pub const fn p_p_game_state() -> usize {
@@ -60,8 +61,8 @@ pub unsafe fn handle_get_command_flag_cat(
         return;
     }
 
-    if fighter.is_button_on(Buttons::StockShare) {
-        if fighter.is_button_on(Buttons::AttackRaw) && !fighter.is_button_on(!(Buttons::AttackRaw | Buttons::StockShare)) {
+    if ControlModule::button_on(CONTROL_PAD_BUTTON_STOCK_SHARE) {
+        if fighter.is_button_on(CONTROL_PAD_BUTTON_ATTACK_RAW) && !fighter.is_button_on(!(CONTROL_PAD_BUTTON_ATTACK_RAW | CONTROL_PAD_BUTTON_STOCK_SHARE)) {
             app::FighterUtil::flash_eye_info(fighter.module_accessor);
             EffectModule::req_follow(fighter.module_accessor, Hash40::new("sys_assist_out"), Hash40::new("top"), &Vector3f{x: 0, y: 0, z: 0}, &Vector3f{x: 0, y: 0, z: 0}, 1.0, true, 0, 0, 0, 0, 0, false, false);
             utils::util::trigger_match_reset();
