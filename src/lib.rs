@@ -2,7 +2,6 @@
 
 use skyline::install_hook;
 use smash::phx::*;
-use smash::hash40;
 use smash::app::{self, lua_bind::*};
 use smash::lib::lua_const::*;
 
@@ -61,9 +60,9 @@ pub unsafe fn handle_get_command_flag_cat(
         return flag;
     }
 
-    if ControlModule::check_button_on(module_accessor, CONTROL_PAD_BUTTON_STOCK_SHARE) {
+    if ControlModule::check_button_on(module_accessor, *CONTROL_PAD_BUTTON_STOCK_SHARE) {
         // TODO: "And no other buttons are on"?
-        if ControlModule::check_button_on(module_accessor, CONTROL_PAD_BUTTON_ATTACK_RAW) {
+        if ControlModule::check_button_on(module_accessor, *CONTROL_PAD_BUTTON_ATTACK_RAW) {
             app::FighterUtil::flash_eye_info(module_accessor);
             EffectModule::req_follow(module_accessor, Hash40::new("sys_assist_out"), Hash40::new("top"), &Vector3f{x: 0.0, y: 0.0, z: 0.0}, &Vector3f{x: 0.0, y: 0.0, z: 0.0}, 1.0, true, 0, 0, 0, 0, 0, false, false);
             trigger_match_reset();
