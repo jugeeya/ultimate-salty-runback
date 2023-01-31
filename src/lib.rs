@@ -4,6 +4,7 @@
 extern crate modular_bitfield;
 
 use skyline::install_hooks;
+use skyline::hooks::InlineCtx;
 use smash::phx::*;
 use smash::app::{self, lua_bind::*};
 use smash::lib::lua_const::*;
@@ -66,6 +67,10 @@ pub unsafe fn handle_get_command_flag_cat(
         return flag;
     }
 
+    if !IS_USABLE {
+        return flag;
+    }
+
     if is_button_on(module_accessor, Buttons::StockShare) {
         if is_button_on(module_accessor, Buttons::AttackRaw) && !is_button_on(module_accessor, !(Buttons::AttackRaw | Buttons::StockShare)) {
             app::FighterUtil::flash_eye_info(module_accessor);
@@ -96,12 +101,40 @@ unsafe fn map_controls_hook(
     && controller.current_buttons.a()
     && (controller.current_buttons.minus() || controller.current_buttons.plus())
     {
-        if controller.current_buttons.x() {
+        if controller.current_buttons.y() {
             (*out).buttons = Buttons::StockShare | Buttons::AttackRaw;
-        } else if controller.current_buttons.y() {
+        } else if controller.current_buttons.x() {
             (*out).buttons = Buttons::StockShare | Buttons::SpecialRaw;
         }
     }
+}
+
+// Set usability based on match type
+static mut IS_USABLE: bool = false;
+
+
+// Not in quickplay
+#[skyline::hook(offset = 0x22d91f4, inline)]
+unsafe fn online_melee_any_scene_create(_: &InlineCtx) {
+    IS_USABLE = false;
+}
+
+// Not in background matchmaking
+#[skyline::hook(offset = 0x22d9124, inline)]
+unsafe fn bg_matchmaking_seq(_: &InlineCtx) {
+    IS_USABLE = false;
+}
+
+// Yes in arenas: although only works if both players have it?
+#[skyline::hook(offset = 0x22d9054, inline)]
+unsafe fn arena_seq(_: &InlineCtx) {
+    IS_USABLE = true;
+}
+
+// Yes in local
+#[skyline::hook(offset = 0x23599b0, inline)]
+unsafe fn main_menu(_: &InlineCtx) {
+    IS_USABLE = true;
 }
 
 #[skyline::main(name = "salty_runback")]
@@ -109,7 +142,11 @@ pub fn main() {
     println!("[Salty Runback] Initializing...");
     install_hooks!(
         handle_get_command_flag_cat,
-        map_controls_hook
+        map_controls_hook,
+        online_melee_any_scene_create
+        bg_matchmaking_seq,
+        arena_seq,
+        main_menu
     );
     println!("[Salty Runback] Installed!");
 }
