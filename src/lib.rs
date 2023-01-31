@@ -7,7 +7,7 @@ use skyline::install_hooks;
 use smash::phx::*;
 use smash::app::{self, lua_bind::*};
 use smash::lib::lua_const::*;
-use input::{ControllerMapping, MappedInputs, SomeControllerStruct, Buttons}
+use input::{ControllerMapping, MappedInputs, SomeControllerStruct, Buttons};
 
 /// Taken from HDR: https://github.com/HDR-Development/HewDraw-Remix/blob/76140b549c829ceaf8d6b7fa5ce4b42bd99bf57d/dynamic/src/util.rs#L230-L242
 pub const fn p_p_game_state() -> usize {
