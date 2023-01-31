@@ -110,8 +110,7 @@ unsafe fn map_controls_hook(
 }
 
 // Set usability based on match type
-static mut IS_USABLE: bool = false;
-
+static mut IS_USABLE: bool = true;
 
 // Not in quickplay
 #[skyline::hook(offset = 0x22d91f4, inline)]
