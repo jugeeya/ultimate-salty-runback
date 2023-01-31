@@ -143,7 +143,7 @@ pub fn main() {
     install_hooks!(
         handle_get_command_flag_cat,
         map_controls_hook,
-        online_melee_any_scene_create
+        online_melee_any_scene_create,
         bg_matchmaking_seq,
         arena_seq,
         main_menu
