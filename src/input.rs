@@ -228,5 +228,5 @@ pub struct MappedInputs {
 #[repr(C)]
 pub struct SomeControllerStruct {
     padding: [u8; 0x10],
-    controller: &'static Controller
+    pub controller: &'static Controller
 }
