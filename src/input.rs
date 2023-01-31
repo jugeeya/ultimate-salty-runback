@@ -1,8 +1,8 @@
 use bitflags::bitflags;
 use modular_bitfield::specifiers::*;
-use smash::app;
+use smash::app::{self, lua_bind::*};
 
-unsafe fn is_button_on(module_accessor: &mut app::BattleObjectModuleAccessor, buttons: Buttons) -> bool {
+pub unsafe fn is_button_on(module_accessor: &mut app::BattleObjectModuleAccessor, buttons: Buttons) -> bool {
     Buttons::from_bits_unchecked(ControlModule::get_button(module_accessor)).intersects(buttons)
 }
 
@@ -226,7 +226,7 @@ pub struct MappedInputs {
 }
 
 #[repr(C)]
-struct SomeControllerStruct {
+pub struct SomeControllerStruct {
     padding: [u8; 0x10],
     controller: &'static Controller
 }
